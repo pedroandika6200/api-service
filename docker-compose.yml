@@ -1,7 +1,7 @@
-name: common-service
+name: octo-api-service
 services:
     laravel:
-        container_name: common-service-laravel
+        container_name: octo-service-laravel
         build:
             context: ./vendor/laravel/sail/runtimes/8.3
             dockerfile: Dockerfile
@@ -12,6 +12,7 @@ services:
             - 'host.docker.internal:host-gateway'
         ports:
             - '${APP_PORT:-8000}:80'
+            - '${REVERB_PORT:-8080}:${REVERB_PORT:-8080}'
             - '${VITE_PORT:-5173}:${VITE_PORT:-5173}'
         environment:
             WWWUSER: '${WWWUSER}'
@@ -27,7 +28,7 @@ services:
             - mysql
             - redis
     mysql:
-        container_name: common-service-mysql
+        container_name: octo-service-mysql
         image: 'mysql/mysql-server:8.0'
         ports:
             - '${FORWARD_DB_PORT:-3306}:3306'
@@ -51,8 +52,8 @@ services:
                 - '-p${DB_PASSWORD}'
             retries: 3
             timeout: 5s
-    redis: 
-        container_name: common-service-redis
+    redis:
+        container_name: octo-service-redis
         image: 'redis:alpine'
         ports:
             - '${FORWARD_REDIS_PORT:-6379}:6379'
