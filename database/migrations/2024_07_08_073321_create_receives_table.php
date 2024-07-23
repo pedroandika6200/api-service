@@ -40,21 +40,6 @@ return new class extends Migration
             $table->foreignId('mounted_uid')->nullable();
             $table->timestamps();
         });
-
-        Schema::create('receive_mounts', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('receive_order_item_id')->constrained()->on('receive_order_items')->references('id')
-                ->cascadeOnUpdate()
-                ->cascadeOnDelete();
-
-            $table->foreignId('locker_id')->constrained()->on('lockers')->references('id')
-                ->restrictOnUpdate()
-                ->restrictOnDelete();
-
-            $table->decimal('amount');
-
-            $table->timestamps();
-        });
     }
 
     /**
@@ -62,7 +47,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('receive_mounts');
         Schema::dropIfExists('receive_order_items');
         Schema::dropIfExists('receive_orders');
     }

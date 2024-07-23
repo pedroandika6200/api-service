@@ -20,9 +20,6 @@ class ReceiveOrderItemResource extends Resource
             $this->mergeInclude('receive_order', function () {
                 return new ReceiveOrderResource($this->resource->receive_order);
             }),
-            $this->mergeInclude('mounts', function () {
-                return ReceiveMountResource::collection($this->resource->mounts);
-            }),
         ];
     }
 }

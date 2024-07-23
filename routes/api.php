@@ -66,9 +66,3 @@ Route::group(['prefix' => '/receive-items'], function($route) {
     $route->delete('/{id}', [\App\Http\ApiControllers\ReceiveOrderItemController::class, 'delete']);
 });
 
-Route::group(['prefix' => '/receive-mounts'], function($route) {
-    $route->get('/{id}', [\App\Http\ApiControllers\ReceiveMountController::class, 'show']);
-    $route->get('/', [\App\Http\ApiControllers\ReceiveMountController::class, 'index']);
-    $route->post('/', [\App\Http\ApiControllers\ReceiveMountController::class, 'store']);
-    $route->delete('/{id}', [\App\Http\ApiControllers\ReceiveMountController::class, 'delete']);
-});

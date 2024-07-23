@@ -14,9 +14,4 @@ class ReceiveOrder extends Model
     {
         return $this->hasMany(ReceiveOrderItem::class);
     }
-
-    public function mounts ()
-    {
-        return $this->hasManyThrough(ReceiveMount::class, ReceiveOrderItem::class);
-    }
 }
