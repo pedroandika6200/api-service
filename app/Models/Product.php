@@ -15,7 +15,8 @@ class Product extends Model
     protected $hidden = ['created_at', 'updated_at'];
 
     protected $fillable = [
-        'sku', 'type', 'name', 'unit', 'sale_price', 'purchase_price', 'description', 'category_id'
+        'sku', 'type', 'name', 'unit', 'dimension', 'weight',
+        'sale_price', 'purchase_price', 'description', 'category_id',
     ];
 
     protected $casts = [
@@ -24,6 +25,8 @@ class Product extends Model
         'published' => 'boolean',
         'sale_price' => 'double',
         'purchase_price' => 'double',
+        'dimension' => 'array',
+        'weight' => 'integer',
         'option.tax_income' => 'double',
         'option.tax_service' => 'double',
     ];
@@ -31,6 +34,11 @@ class Product extends Model
     public function category()
     {
         return $this->belongsTo(ProductCategory::class);
+    }
+
+    public function stockables()
+    {
+        return $this->hasMany(Stockable::class);
     }
 
     public function converts($revese = false)
@@ -57,5 +65,29 @@ class Product extends Model
     public function scopeSearchKey(Builder $query, $skuOrId)
     {
         return $query->where('id', $skuOrId)->orWhere('sku', $skuOrId)->limit(1);
+    }
+
+    public function getVolumeAttribute()
+    {
+        $dim = $this->getAttribute('dimension') ?? [];
+        return intval($dim[0]) * intval($dim[1]) * intval($dim[2]) ?: null;
+    }
+
+    public function instock(int $amount, string $type = 'GENERAL')
+    {
+        if ($this->stockables()->where('type', strtoupper($type))->count() == 0) {
+            $this->stockables()->create(['type' => strtoupper($type)]);
+        }
+
+        $this->stockables()->where('type', strtoupper($type))->increment('amount', $amount);
+    }
+
+    public function destock(int $amount, string $type = 'GENERAL')
+    {
+        if ($this->stockables()->where('type', strtoupper($type))->count() == 0) {
+            $this->stockables()->create(['type' => strtoupper($type)]);
+        }
+
+        $this->stockables()->where('type', strtoupper($type))->decrease('amount', $amount);
     }
 }

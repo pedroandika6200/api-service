@@ -21,6 +21,8 @@ return new class extends Migration
             $table->decimal('purchase_price', 12, 2)->default(0);
             $table->boolean('disabled')->default(0);
             $table->boolean('published')->default(1);
+            $table->jsonb('dimension')->comment("Array dimension [d x d x d]");
+            $table->integer('weight')->comment("Weight on gram unit");
             $table->foreignId('category_id')->nullable()->constrained()->on('product_categories')->references('id')
                 ->restrictOnDelete()
                 ->restrictOnUpdate();
@@ -28,6 +30,14 @@ return new class extends Migration
             $table->jsonb('option')->nullable();
             $table->text('description')->nullable();
             $table->timestamps();
+        });
+
+
+        Schema::create('stockables', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('product_id');
+            $table->string('type');
+            $table->integer('amount')->default(0);
         });
     }
 

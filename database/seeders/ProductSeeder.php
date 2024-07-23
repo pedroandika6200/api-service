@@ -15,7 +15,23 @@ class ProductSeeder extends Seeder
         'Expl' => ['Box', 'Palet'],
     ];
 
-    const CONVERTS = [5, 10, 12, 20, 24];
+    const CONVERTS = [
+        5 => [
+            [5,1,1]
+        ],
+        10 => [
+            [5,2,1]
+        ],
+        12 => [
+            [6,2,1], [4,3,1]
+        ],
+        20 => [
+            [10,2,1], [5,4,1]
+        ],
+        24 => [
+            [6,4,1], [6,2,2], [4,3,2]
+        ],
+    ];
 
     protected \Faker\Generator $fake;
 
@@ -28,17 +44,23 @@ class ProductSeeder extends Seeder
     protected function fakerProduct($count = 10)
     {
         $cats = \App\Models\ProductCategory::all();
-
         $nominal = rand(5, 10);
+
         for ($i=0; $i < $count; $i++) {
+            $unit = collect(static::UNITS)->keys()->shuffle()->first();
+            $weight = $unit == "Kg" ? 1000 : (rand(2,50) * 100);
+            $dimension = $this->getVolume();
+
             $request = new Request([
                 'type' => \App\Enums\ProductType::ITEM->value,
                 'sku' => $this->fake->word . $this->fake->unique()->numerify('-###-###-##'),
                 'name' => join(' ', $this->fake->words(rand(2,4))),
-                'unit' => collect(static::UNITS)->keys()->shuffle()->first(),
+                'unit' => $unit,
                 'sale_price' => 2500 * $nominal,
                 'purchase_price' => 2000 * $nominal,
                 'category_id' => $cats->shuffle()->first()->id,
+                'dimension' => $dimension,
+                'weight' => $weight,
                 'description' => $this->fake->sentence,
                 'option' => [
                     'taxsen_income' => rand(0,4) > 3 ? null : 11,
@@ -68,14 +90,20 @@ class ProductSeeder extends Seeder
         $converts = collect(static::UNITS)->firstWhere(fn($e, $key) => $key === $request->unit);
 
         foreach ($converts as $unit) {
-            $rate = collect(static::CONVERTS)->shuffle()->first();
+            $rate = collect(static::CONVERTS)->keys()->shuffle()->first();
+            $weight = intval($baseRequest->get('weight')) * $rate;
+            $dimensions = collect(static::CONVERTS[$rate] ?? [])->shuffle()->first();
+            $dimension = $this->getVolume(...($dimensions ?? []));
+            // dd("xx", $rate, $weight, $dimension);
             $newSKU = $baseRequest->get('sku') . $this->fake->unique()->numerify('-####');
             $request->merge([
                 'sku' => $newSKU,
-                'name' => $baseRequest->get('name') ." [". $unit ."]",
+                'name' => $baseRequest->get('name'),
                 'unit' => $unit,
                 'sale_price' => $request->get('sale_price') * $rate,
                 'purchase_price' => $request->get('purchase_price') * $rate,
+                'dimension' => $dimension,
+                'weight' => $weight,
                 'convertable' => [
                     ['point_id' => $baseRequest->get('sku'), 'rate' => $rate]
                 ]
@@ -91,6 +119,10 @@ class ProductSeeder extends Seeder
         $cats = \App\Models\ProductCategory::all();
         $collect = collect();
         for ($i=0; $i < rand(2, 4); $i++) {
+            $unit = collect(static::UNITS)->keys()->shuffle()->first();
+            $weight = $unit == "Kg" ? 1000 : (rand(2,50) * 100);
+            $dimension = $this->getVolume();
+
             $nominal = rand(5, 20);
             $collect->push(Product::create([
                 'sku' => $this->fake->word ."-". $this->fake->unique()->numerify('-####'),
@@ -98,11 +130,23 @@ class ProductSeeder extends Seeder
                 'unit' => collect(static::UNITS)->keys()->shuffle()->first(),
                 'sale_price' => 2500 * $nominal,
                 'purchase_price' => 2000 * $nominal,
+                'dimension' => $dimension,
+                'weight' => $weight,
                 'category_id' => $cats->shuffle()->first()->id,
                 'description' => $this->fake->sentence,
             ]));
         }
 
         return $collect;
+    }
+
+    protected function getVolume ($x = 1, $y = 1, $t = 1)
+    {
+        $fnMax = fn ($n) => $n > 100 ? 100 : $n;
+        $nx = rand(1, 5) * ($x * 2);
+        $ny = rand(1, 5) * ($y * 3);
+        $nt = rand(1, 5) * ($t * 5);
+
+        return [$fnMax($nx), $fnMax($ny), $fnMax($nt)];
     }
 }

@@ -51,3 +51,24 @@ Route::group(['prefix' => '/sales-orders'], function($route) {
     $route->get('/', [\App\Http\ApiControllers\SalesOrderController::class, 'index']);
     $route->post('/', [\App\Http\ApiControllers\SalesOrderController::class, 'save']);
 });
+
+Route::group(['prefix' => '/receive-orders'], function($route) {
+    $route->get('/{id}', [\App\Http\ApiControllers\ReceiveOrderController::class, 'show']);
+    $route->get('/', [\App\Http\ApiControllers\ReceiveOrderController::class, 'index']);
+    $route->post('/', [\App\Http\ApiControllers\ReceiveOrderController::class, 'save']);
+    $route->delete('/{id}', [\App\Http\ApiControllers\ReceiveOrderController::class, 'delete']);
+});
+
+Route::group(['prefix' => '/receive-items'], function($route) {
+    $route->get('/{id}', [\App\Http\ApiControllers\ReceiveOrderItemController::class, 'show']);
+    $route->get('/', [\App\Http\ApiControllers\ReceiveOrderItemController::class, 'index']);
+    $route->post('/', [\App\Http\ApiControllers\ReceiveOrderItemController::class, 'store']);
+    $route->delete('/{id}', [\App\Http\ApiControllers\ReceiveOrderItemController::class, 'delete']);
+});
+
+Route::group(['prefix' => '/receive-mounts'], function($route) {
+    $route->get('/{id}', [\App\Http\ApiControllers\ReceiveMountController::class, 'show']);
+    $route->get('/', [\App\Http\ApiControllers\ReceiveMountController::class, 'index']);
+    $route->post('/', [\App\Http\ApiControllers\ReceiveMountController::class, 'store']);
+    $route->delete('/{id}', [\App\Http\ApiControllers\ReceiveMountController::class, 'delete']);
+});

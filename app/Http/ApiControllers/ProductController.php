@@ -45,7 +45,8 @@ class ProductController extends Controller
         ]);
 
         $row = $request->only([
-            'name', 'sku', 'unit', 'purchase_price', 'sale_price', 'description', 'category_id',
+            'name', 'sku', 'unit', 'dimension', 'weight',
+            'purchase_price', 'sale_price', 'description', 'category_id',
         ]);
 
         app('db')->beginTransaction();
