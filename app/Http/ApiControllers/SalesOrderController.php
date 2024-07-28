@@ -35,13 +35,10 @@ class SalesOrderController extends Controller
             "items" => "sometimes|array",
         ]);
 
-        $key = str()->uuid();
-        $queue = \App\Jobs\SalesOrderSave::dispatchOrSync($key, $request->all())
-            // ->delay(30)
-            ;
+
+        $queue = \App\Jobs\SalesOrderSave::dispatchOrSync($request);
 
         return $this->responseQueue($queue, [
-            "key" => $key,
             "message" => "The sales-order request on queue processing."
         ]);
     }

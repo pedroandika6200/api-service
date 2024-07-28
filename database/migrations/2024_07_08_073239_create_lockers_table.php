@@ -25,7 +25,6 @@ return new class extends Migration
             $table->json('position')->nullable();
             $table->jsonb('dimension')->comment("Array dimension [d x d x d]");
             $table->integer('wmax')->comment("Maximum weight on [kg] unit");
-
             $table->foreignId('product_id')->nullable()
                 ->constrained()->on('products')->references('id')->nullOnDelete()->cascadeOnUpdate();
             $table->integer('capacity')->default(0);
@@ -37,7 +36,6 @@ return new class extends Migration
             $table->id();
             $table->foreignId('locker_id');
             $table->foreignId('product_id');
-            $table->morphs('model');
             $table->integer('amount')->default(0);
             $table->text('notes')->nullable();
             $table->timestamps();

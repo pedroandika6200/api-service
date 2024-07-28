@@ -33,49 +33,26 @@ class ReceiveOrderItemController extends Controller
             "amount" => "required",
         ]);
 
-        $row = $request->only([
-            "receive_order_id", "pallet", "product_id", "amount",
-        ]);
+        $queue = \App\Jobs\ReceivePalleting::dispatchOrSync($request);
 
-        app('db')->beginTransaction();
-
-        /** @var ReceiveOrderItem $record*/
-        $record = new ReceiveOrderItem($row);
-
-        $record->save();
-
-        app('db')->commit();
-
-        $message = "The record has been created.";
-
-        return (new ReceiveOrderItemResource($record))->additional([
-            "message" => $message,
+        return $this->responseQueue($queue, [
+            "message" => "The receive mounting on queue processing."
         ]);
     }
 
     /** @var \App\Models\ReceiveOrderItem $record */
-    public function storeMounts (ReceiveOrderItem $record, Request $request)
+    public function storeMounting (Request $request)
     {
         $request->validate([
-            "*.locker_id" => "required|exists:lockers,id",
-            "*.amount" => "required",
+            "id" => "required|exists:receive_order_items,id",
+            "mounts.*.locker_id" => "required|exists:lockers,id",
+            "mounts.*.amount" => "required",
         ]);
 
-        app('db')->beginTransaction();
+        $queue = \App\Jobs\ReceiveMounting::dispatchOrSync($request);
 
-        $rows = collect($request->all())->select(['locker_id', 'amount']);
-
-        $record->setAttribute('mounts', $rows->all());
-        $record->save();
-
-        ReceiveMounted::dispatchSync($record);
-
-        app('db')->commit();
-
-        $message = "The record has been mounted.";
-
-        return (new ReceiveOrderItemResource($record))->additional([
-            "message" => $message,
+        return $this->responseQueue($queue, [
+            "message" => "The receive mounting on queue processing."
         ]);
     }
 

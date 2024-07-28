@@ -26,18 +26,25 @@ class Locker extends Model
         return $this->belongsTo(Product::class);
     }
 
+    public function lockerables ()
+    {
+        return $this->hasMany(Lockerable::class);
+    }
+
     public static function resetStore()
     {
         static::query()->update([
+            'receive_order_id' => null,
             'product_id' => null,
             'amount' => 0,
             'capacity' => 0,
         ]);
     }
 
-    public function store (Product $product, int $amount, $validate = true)
+    public function mounting (Product $product, int $amount, $receiveID, $validate = true)
     {
         if (!$this->getAttribute('product_id')) {
+            $this->setAttribute('receive_order_id', $receiveID);
             $this->setAttribute('product_id', $product->id);
             $this->setAttribute('capacity', $this->getCapacity($product));
             $this->setAttribute('amount', 0);
@@ -52,6 +59,11 @@ class Locker extends Model
         }
 
         static::where($this->getKeyName(), $this->getKey())->update(['amount' => app('db')->raw(" (amount + $amount)")]);
+
+        $this->lockerables()->create([
+            "product_id" => $product->id,
+            "amount" => $amount,
+        ]);
     }
 
     public function getVolumeAttribute() :? int
@@ -72,10 +84,13 @@ class Locker extends Model
         return intval($this->volume / $product->volume);
     }
 
-    protected function scopeAvailableProduct (Builder $query, $productID = null)
+    protected function scopeAvailableProduct (Builder $query, $productID = null, $receiveID = null)
     {
         return $query->whereNull('product_id')->when($productID,
-            fn($q) => $q->orWhere(fn($q) => $q->where('product_id', $productID)->whereColumn('amount', '<' , 'capacity'))
+            fn($q) => $q->orWhere(
+                fn($q) => $q->where('product_id', $productID)->whereColumn('amount', '<' , 'capacity')
+                            ->when($productID, fn($q) => $q->where('receive_order_id', $receiveID))
+            )
         );
     }
 }

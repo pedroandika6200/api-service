@@ -40,6 +40,11 @@ return new class extends Migration
             $table->foreignId('mounted_uid')->nullable();
             $table->timestamps();
         });
+
+        Schema::table('lockers', function (Blueprint $table) {
+            $table->foreignId('receive_order_id')->nullable()->after('product_id')
+                ->constrained()->on('receive_orders')->references('id')->restrictOnDelete();
+        });
     }
 
     /**
@@ -47,6 +52,9 @@ return new class extends Migration
      */
     public function down(): void
     {
+        Schema::table('lockers', function (Blueprint $table) {
+            $table->dropColumn('receive_order_id');
+        });
         Schema::dropIfExists('receive_order_items');
         Schema::dropIfExists('receive_orders');
     }

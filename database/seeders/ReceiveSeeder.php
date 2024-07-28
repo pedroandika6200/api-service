@@ -65,15 +65,18 @@ class ReceiveSeeder extends Seeder
             ]);
 
             $response = app(\App\Http\ApiControllers\ReceiveOrderItemController::class)->store($request);
-            $trollies->push($response->resource);
+
+            $trollies->push($response->getData());
         }
 
-        $trollies->each(fn($e) => $this->fakerMounting($e));
+        $trollies->each(fn($e) => $this->fakerMounting(
+            \App\Models\ReceiveOrderItem::whereNull('mounts')->get()->shuffle()->first()
+        ));
     }
 
     protected function fakerMounting(\App\Models\ReceiveOrderItem $receiveItem)
     {
-        $lockers = \App\Models\Locker::availableProduct($receiveItem->product_id)->get();
+        $lockers = \App\Models\Locker::availableProduct($receiveItem->product_id, $receiveItem->receive_order_id)->get();
 
         if ($lockers->count() <= 0) {
             $this->command->error("LOCKER NOT AVAILABLE RECEIVEITEM[$receiveItem->id]");
@@ -103,7 +106,12 @@ class ReceiveSeeder extends Seeder
         $this->command->info("mounted: RECEIVEITEM[$receiveItem->id] ". $lockerNames->join(' + '));
 
         if ($total == 0) {
-            app(\App\Http\ApiControllers\ReceiveOrderItemController::class)->storeMounts($receiveItem, new Request($rows->toArray()));
+            app(\App\Http\ApiControllers\ReceiveOrderItemController::class)->storeMounting(
+                new Request([
+                    'id' => $receiveItem->id,
+                    'mounts' => $rows->toArray(),
+                ])
+            );
 
         }
         else {

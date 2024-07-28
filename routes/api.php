@@ -16,9 +16,10 @@ Route::get('/user', function (Request $request) {
 })->middleware('auth');
 
 
-Route::get('/test', function (Request $request) {
-    $event = \App\Events\RecordSaved::dispatch('xx-key', \App\Models\SalesOrder::first());
-    return response()->json($event);
+Route::get('/testa', function () {
+    $record = \App\Models\ReceiveOrderItem::first();
+    $event = \App\Jobs\ReceiveMounting::dispatch($record, new Request());
+    return response()->json(['queue' => $event]);
 });
 
 

@@ -12,7 +12,6 @@ class ProductConvertableResource extends Resource
      */
     public function toArray($request)
     {
-        // dd($this->resource);
         return [
             // $this->mergeAttributes(),
             $this->mergeInclude('product', function () {

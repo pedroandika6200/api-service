@@ -39,11 +39,12 @@ class RecordSaved implements ShouldBroadcast
 
     public function broadcastWith(): array
     {
-
+        $labelRecord =  "[". ($this->model->labelRecord ?? $this->model->number ?? $this->model->name ?? $this->model->id) ."]";
         return [
             "key" => $this->key,
-            "message" => "The record [". $this->model->name ."] saved.",
-            "data" => $this->model->toArray(),
+            "message" => "The record $labelRecord saved.",
+            "data" => $this->model?->toArray(),
         ];
     }
+
 }

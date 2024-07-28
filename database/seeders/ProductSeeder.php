@@ -94,7 +94,7 @@ class ProductSeeder extends Seeder
             $weight = intval($baseRequest->get('weight')) * $rate;
             $dimensions = collect(static::CONVERTS[$rate] ?? [])->shuffle()->first();
             $dimension = $this->getVolume(...($dimensions ?? []));
-            // dd("xx", $rate, $weight, $dimension);
+
             $newSKU = $baseRequest->get('sku') . $this->fake->unique()->numerify('-####');
             $request->merge([
                 'sku' => $newSKU,
