@@ -32,7 +32,7 @@ class ReceivePalleting extends Job
 
         $record->save();
 
-        // \App\Events\RecordSaved::dispatchUnless(app()->runningInConsole(), $this->qid, $record); //->withDelay(now()->addSeconds(10));
+        \App\Events\RecordSaved::dispatchUnconsole($this->qid, $record); //->withDelay(now()->addSeconds(10));
 
         app('db')->commit();
     }

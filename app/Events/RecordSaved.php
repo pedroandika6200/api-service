@@ -46,5 +46,11 @@ class RecordSaved implements ShouldBroadcast
             "data" => $this->model?->toArray(),
         ];
     }
+    public static function dispatchUnconsole(...$arguments)
+    {
+        if (! app()->runningInConsole()) {
+            return event(new static(...$arguments));
+        }
+    }
 
 }

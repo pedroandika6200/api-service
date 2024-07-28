@@ -43,7 +43,7 @@ class ReceiveMounting extends Job
 
         $record->product->instock($record->amount);
 
-        \App\Events\RecordSaved::dispatchUnless(app()->runningInConsole(), $this->qid, $record); //->withDelay(now()->addSeconds(10));
+        \App\Events\RecordSaved::dispatchUnconsole($this->qid, $record); //->withDelay(now()->addSeconds(10));
 
         app('db')->commit();
 

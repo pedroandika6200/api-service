@@ -83,7 +83,7 @@ class SalesOrderSave extends Job
 
         $record->setNumber();
 
-        \App\Events\RecordSaved::dispatchUnless(app()->runningInConsole(), $this->qid, $record); //->withDelay(now()->addSeconds(10));
+        \App\Events\RecordSaved::dispatchUnconsole($this->qid, $record); //->withDelay(now()->addSeconds(10));
 
         return $record;
     }
