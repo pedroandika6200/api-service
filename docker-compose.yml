@@ -28,40 +28,6 @@ services:
             - mysql
             - redis
 
-    # queue:
-    #     container_name: octo-api-queue
-    #     image: sail-8.3/app
-    #     restart: always
-    #     working_dir: /var/www/html
-    #     command: "php artisan queue:work"
-    #     environment:
-    #         WWWUSER: '${WWWUSER}'
-    #         LARAVEL_SAIL: 1
-    #     depends_on:
-    #         - app
-    #     volumes:
-    #         - ./:/var/www/html
-    #     networks:
-    #         - network
-
-    # reverb:
-    #     container_name: octo-api-reverb
-    #     image: sail-8.3/app
-    #     # restart: always
-    #     working_dir: /var/www/html
-    #     command: "php artisan reverb:start"
-    #     ports:
-    #         - '${REVERB_PORT:-8080}:${REVERB_PORT:-8080}'
-    #     environment:
-    #         WWWUSER: '${WWWUSER}'
-    #         LARAVEL_SAIL: 1
-    #     depends_on:
-    #         - app
-    #     volumes:
-    #         - ./:/var/www/html
-    #     networks:
-    #         - network
-
     mysql:
         container_name: octo-api-mysql
         image: 'mysql/mysql-server:8.0'
@@ -76,7 +42,7 @@ services:
             MYSQL_ALLOW_EMPTY_PASSWORD: 1
         volumes:
             - 'mysql:/var/lib/mysql'
-            - './vendor/laravel/sail/database/mysql/create-testing-database.sh:/docker-entrypoint-initdb.d/10-create-testing-database.sh'
+            - './.docker/mysql/create-testing-database.sh:/docker-entrypoint-initdb.d/10-create-testing-database.sh'
         networks:
             - network
         healthcheck:
