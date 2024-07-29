@@ -13,17 +13,21 @@ class Job implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable;
 
     protected string $qid;
+    protected Request $request;
 
     static function dispatchOrSync(...$arguments)
     {
         if (app()->runningInConsole()) {
-            return static::dispatchSync(...$arguments);
+            return static::dispatch(...$arguments)->onConnection('sync');
         }
+
         return static::dispatch(...$arguments);
+
     }
 
-    protected function generateKey (Request $request = new Request())
+    protected function setQueueRequest ($request)
     {
-        $this->qid = $request->get('qid') ?: str()->uuid();
+        $this->request = new Request($request);
+        $this->qid = $this->request->get('qid') ?: str()->uuid();
     }
 }

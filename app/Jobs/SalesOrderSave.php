@@ -13,12 +13,9 @@ use App\Models\SalesOrderItem;
 
 class SalesOrderSave extends Job
 {
-    private Request $request;
-
-    public function __construct(Request $request)
+    public function __construct($request)
     {
-        $this->request = $request;
-        $this->generateKey($request);
+        $this->setQueueRequest($request);
     }
 
     public function handle()
@@ -83,7 +80,7 @@ class SalesOrderSave extends Job
 
         $record->setNumber();
 
-        \App\Events\RecordSaved::dispatchUnconsole($this->qid, $record); //->withDelay(now()->addSeconds(10));
+        \App\Events\RecordSaved::dispatch($this->qid, $record); //->withDelay(now()->addSeconds(10));
 
         return $record;
     }

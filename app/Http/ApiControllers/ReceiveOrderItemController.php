@@ -5,7 +5,6 @@ namespace App\Http\ApiControllers;
 use App\Http\Filters\ReceiveOrderItemFilter;
 use App\Models\ReceiveOrderItem;
 use App\Http\Resources\ReceiveOrderItemResource;
-use App\Jobs\ReceiveMounted;
 use Illuminate\Http\Request;
 
 class ReceiveOrderItemController extends Controller
@@ -26,6 +25,8 @@ class ReceiveOrderItemController extends Controller
 
     public function store (Request $request)
     {
+        if (!$request->has('qid')) $request->merge(['qid' => str()->uuid()]);
+
         $request->validate([
             "pallet" => "required", // |unique:receive_order_items,pallet,null,null,mounted_uid,null",
             "receive_order_id" => "required|exists:receive_orders,id",
@@ -33,9 +34,10 @@ class ReceiveOrderItemController extends Controller
             "amount" => "required",
         ]);
 
-        $queue = \App\Jobs\ReceivePalleting::dispatchOrSync($request);
+        \App\Jobs\ReceivePalleting::dispatchOrSync($request->all());
 
-        return $this->responseQueue($queue, [
+        return response()->json([
+            "qid" => $request->get('qid'),
             "message" => "The receive mounting on queue processing."
         ]);
     }
@@ -43,16 +45,19 @@ class ReceiveOrderItemController extends Controller
     /** @var \App\Models\ReceiveOrderItem $record */
     public function storeMounting (Request $request)
     {
+        if (!$request->has('qid')) $request->merge(['qid' => str()->uuid()]);
+
         $request->validate([
             "id" => "required|exists:receive_order_items,id",
             "mounts.*.locker_id" => "required|exists:lockers,id",
             "mounts.*.amount" => "required",
         ]);
 
-        $queue = \App\Jobs\ReceiveMounting::dispatchOrSync($request);
+        \App\Jobs\ReceiveMounting::dispatchOrSync($request->all());
 
-        return $this->responseQueue($queue, [
-            "message" => "The receive mounting on queue processing."
+        return response()->json([
+            "qid" => $request->get('qid'),
+            "message" => "The receive mounting on queue processing.",
         ]);
     }
 

@@ -12,12 +12,10 @@ use Illuminate\Http\Request;
 
 class ReceiveMounting extends Job
 {
-    private Request $request;
 
-    public function __construct(Request $request)
+    public function __construct($request)
     {
-        $this->request = $request;
-        $this->generateKey($request);
+        $this->setQueueRequest($request);
     }
 
     public function handle()

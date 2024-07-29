@@ -25,6 +25,8 @@ class SalesOrderController extends Controller
 
     public function save (Request $request)
     {
+        if (!$request->has('qid')) $request->merge(['qid' => str()->uuid()]);
+
         $request->validate([
             "id" => "nullable|exists:sales_orders,id",
             "number" => "sometimes|unique:sales_orders,number,". $request->get('id', null) .",id",
@@ -36,9 +38,10 @@ class SalesOrderController extends Controller
         ]);
 
 
-        $queue = \App\Jobs\SalesOrderSave::dispatchOrSync($request);
+        \App\Jobs\SalesOrderSave::dispatchOrSync($request->all());
 
-        return $this->responseQueue($queue, [
+        return response()->json([
+            "qid" => $request->get('qid'),
             "message" => "The sales-order request on queue processing."
         ]);
     }
