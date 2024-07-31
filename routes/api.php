@@ -11,17 +11,19 @@ Route::get('/', function (Request $request) {
     ]);
 });
 
-Route::get('/user', function (Request $request) {
-    return $request->user();
-})->middleware('auth');
-
-
-Route::get('/testa', function () {
-    $record = \App\Models\ReceiveOrderItem::first();
-    $event = \App\Jobs\ReceiveMounting::dispatch($record, new Request());
-    return response()->json(['queue' => $event]);
+Route::group(['prefix' => '/racks'], function($route) {
+    $route->get('/{id}', [\App\Http\ApiControllers\RackController::class, 'show']);
+    $route->get('/', [\App\Http\ApiControllers\RackController::class, 'index']);
+    $route->post('/', [\App\Http\ApiControllers\RackController::class, 'save']);
+    $route->delete('/{id}', [\App\Http\ApiControllers\RackController::class, 'delete']);
 });
 
+Route::group(['prefix' => '/lockers'], function($route) {
+    $route->get('/{id}', [\App\Http\ApiControllers\LockerController::class, 'show']);
+    $route->get('/', [\App\Http\ApiControllers\LockerController::class, 'index']);
+    $route->post('/', [\App\Http\ApiControllers\LockerController::class, 'save']);
+    $route->delete('/{id}', [\App\Http\ApiControllers\LockerController::class, 'delete']);
+});
 
 Route::group(['prefix' => '/product-categories'], function($route) {
     $route->get('/{id}', [\App\Http\ApiControllers\ProductCategoryController::class, 'show']);

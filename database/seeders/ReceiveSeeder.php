@@ -76,7 +76,7 @@ class ReceiveSeeder extends Seeder
 
     protected function fakerMounting(\App\Models\ReceiveOrderItem $receiveItem)
     {
-        $lockers = \App\Models\Locker::availableProduct($receiveItem->product_id, $receiveItem->receive_order_id)->get();
+        $lockers = \App\Models\Locker::whereMountable($receiveItem->product_id, $receiveItem->receive_order_id)->get();
 
         if ($lockers->count() <= 0) {
             $this->command->error("LOCKER NOT AVAILABLE RECEIVEITEM[$receiveItem->id]");

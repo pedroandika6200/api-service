@@ -84,7 +84,7 @@ class Locker extends Model
         return intval($this->volume / $product->volume);
     }
 
-    protected function scopeAvailableProduct (Builder $query, $productID = null, $receiveID = null)
+    protected function scopeWhereMountable (Builder $query, $productID = null, $receiveID = null)
     {
         return $query->whereNull('product_id')->when($productID,
             fn($q) => $q->orWhere(
