@@ -38,30 +38,45 @@ class Locker extends Model
             'product_id' => null,
             'amount' => 0,
             'capacity' => 0,
+            'premount' => 0,
         ]);
     }
 
-    public function mounting (Product $product, int $amount, $receiveID, $validate = true)
+    public function mounting (Model $model, int $premount, $receiveID, $validate = true)
     {
         if (!$this->getAttribute('product_id')) {
             $this->setAttribute('receive_order_id', $receiveID);
-            $this->setAttribute('product_id', $product->id);
-            $this->setAttribute('capacity', $this->getCapacity($product));
+            $this->setAttribute('product_id', $model->product->id);
+            $this->setAttribute('capacity', $this->getCapacity($model->product));
             $this->setAttribute('amount', 0);
+            $this->setAttribute('premount', 0);
             $this->save();
         }
-        else if ($this->getAttribute('product_id') !== $product->id) {
+        else if ($this->getAttribute('product_id') !== $model->product->id) {
             abort(406, "The Product storing invalid!");
         }
 
-        if ($validate && $amount > $this->available) {
+        if ($validate && $premount > $this->available) {
             abort(406, "The capacity stored has been overload");
         }
 
-        static::where($this->getKeyName(), $this->getKey())->update(['amount' => app('db')->raw(" (amount + $amount)")]);
+        static::where($this->getKeyName(), $this->getKey())->update(['premount' => app('db')->raw(" (premount + $premount)")]);
+    }
 
-        $this->lockerables()->create([
-            "product_id" => $product->id,
+    public function mounted (Model $model, int $amount, $validate = true)
+    {
+        if ($validate && $this->premount < $amount) {
+            abort(406, "The mounted stored has been more than premount");
+        }
+
+        static::where($this->getKeyName(), $this->getKey())->update([
+            'premount' => app('db')->raw(" (premount - $amount)"),
+            'amount' => app('db')->raw(" (amount + $amount)"),
+        ]);
+
+        $model->lockerables()->create([
+            "locker_id" => $this->id,
+            "product_id" => $model->product->id,
             "amount" => $amount,
         ]);
     }
@@ -75,7 +90,7 @@ class Locker extends Model
     public function getAvailableAttribute():? int
     {
         if (!$this->getAttribute('product_id')) return null;
-        return intval($this->capacity) - intval($this->amount);
+        return intval($this->capacity) - intval($this->premount) - intval($this->amount);
     }
 
     public function getCapacity(Product $product) :? int
@@ -84,11 +99,11 @@ class Locker extends Model
         return intval($this->volume / $product->volume);
     }
 
-    protected function scopeWhereMountable (Builder $query, $productID = null, $receiveID = null)
+    protected function scopeWhereMounting (Builder $query, $productID = null, $receiveID = null)
     {
         return $query->whereNull('product_id')->when($productID,
             fn($q) => $q->orWhere(
-                fn($q) => $q->where('product_id', $productID)->whereColumn('amount', '<' , 'capacity')
+                fn($q) => $q->where('product_id', $productID)->whereColumn(app('db')->raw('(amount + premount)'), '<' , 'capacity')
                             ->when($productID, fn($q) => $q->where('receive_order_id', $receiveID))
             )
         );

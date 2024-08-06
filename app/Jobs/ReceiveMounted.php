@@ -10,7 +10,7 @@ use Illuminate\Queue\SerializesModels;
 use App\Models\ReceiveOrderItem;
 use Illuminate\Http\Request;
 
-class ReceiveMounting extends Job
+class ReceiveMounted extends Job
 {
 
     public function __construct($request)
@@ -21,23 +21,17 @@ class ReceiveMounting extends Job
     public function handle()
     {
         $record = ReceiveOrderItem::findOrFail($this->request->get('id'));
-        $data = collect($this->request->get('mounts'))->select(['locker_id', 'amount']);
-
-        if ($data->sum('amount') != $record->amount) {
-            abort(406, 'The mounting amount does not match');
-        }
 
         app('db')->beginTransaction();
 
-        $record->mounts()->delete();
+        if (!$record->mounts?->count()) abort(406, "The record has not been mounted.");
 
-        $data->each(function($e) use ($record) {
-            $mount = $record->mounts()->create($e);
-
-            $mount->locker->mounting($record, $mount->amount, $record->receive_order_id);
+        $record->mounts->each(function($e) use ($record) {
+            \App\Models\Locker::find($e['locker_id'])->mounted($record, $e['amount'], $record->receive_order_id);
+            $e->setMounted();
         });
 
-        // $record->product->instock($record->amount);
+        $record->product->instock($record->amount);
 
         \App\Events\RecordSaved::dispatchUnconsole($this->qid, $record); //->withDelay(now()->addSeconds(10));
 

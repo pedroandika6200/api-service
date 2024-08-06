@@ -31,12 +31,8 @@ class SalesOrder extends Model
 
     public function setNumber()
     {
-
         if (!str($this->number)->startsWith('DRAFT-')) return;
 
-        // $prefix = setting('order_receive.number.prefix') ?? 'KTI';
-        // $digits = setting('order_receive.number.digits') ?? 5;
-        // $separator = setting('order_receive.number.separator') ?? '/';
         $prefix = 'SO';
         $digits = 5;
         $separator = '/';

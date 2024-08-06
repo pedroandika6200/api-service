@@ -144,7 +144,7 @@ class ProductSeeder extends Seeder
     {
         $fnMax = fn ($n) => $n > 100 ? 100 : $n;
         $nx = rand(1, 5) * ($x * 2);
-        $ny = rand(1, 5) * ($y * 3);
+        $ny = rand(1, 5) * ($y * 5);
         $nt = rand(1, 5) * ($t * 5);
 
         return [$fnMax($nx), $fnMax($ny), $fnMax($nt)];

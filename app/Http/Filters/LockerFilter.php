@@ -8,6 +8,6 @@ class LockerFilter extends Filter
     {
         $receiveID = $this->request->get('mountableReceiveOrderId')
             ?? $this->request->get('mountable_receive_order_id') ?? null;
-        return $this->whereMountable($id, $receiveID);
+        return $this->whereMounting($id, $receiveID);
     }
 }

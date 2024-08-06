@@ -34,10 +34,25 @@ return new class extends Migration
                 ->restrictOnDelete();
 
             $table->decimal('amount');
-            $table->jsonb('mounts')->nullable();
 
             $table->foreignId('received_uid')->nullable();
             $table->foreignId('mounted_uid')->nullable();
+            $table->timestamps();
+        });
+
+        Schema::create('receive_order_mounts', function (Blueprint $table) {
+            $table->id();
+
+            $table->foreignId('receive_order_item_id')->constrained()->on('receive_order_items')->references('id')
+                ->cascadeOnUpdate()
+                ->cascadeOnDelete();
+
+            $table->foreignId('locker_id')->constrained()->on('lockers')->references('id')
+                ->restrictOnUpdate()
+                ->restrictOnDelete();
+
+            $table->decimal('amount');
+            $table->timestamp('mounted_at')->nullable();
             $table->timestamps();
         });
 

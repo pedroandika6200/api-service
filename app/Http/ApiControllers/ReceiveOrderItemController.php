@@ -43,17 +43,47 @@ class ReceiveOrderItemController extends Controller
     }
 
     /** @var \App\Models\ReceiveOrderItem $record */
-    public function storeMounting (Request $request)
+    public function setMounting (Request $request)
+    {
+        if (!$request->has('qid')) $request->merge(['qid' => str()->uuid()]);
+
+        $record = ReceiveOrderItem::findOrFail($request->get('id'));
+
+        $request->validate([
+            "id" => "required|exists:receive_order_items,id",
+            "mounts" => "nullable|array",
+            "mounts.*.locker_id" => "required|exists:lockers,id",
+            "mounts.*.amount" => "required",
+        ]);
+
+
+        if (collect($request->get('mounts', []))->sum('amount') < $record->amount) {
+            abort(406, "The total amount is not enough to mounting.");
+        }
+
+        \App\Jobs\ReceiveMounting::dispatchOrSync($request->all());
+
+        return response()->json([
+            "qid" => $request->get('qid'),
+            "message" => "The receive mounting on queue processing.",
+        ]);
+    }
+
+    /** @var \App\Models\ReceiveOrderItem $record */
+    public function setMounted (Request $request)
     {
         if (!$request->has('qid')) $request->merge(['qid' => str()->uuid()]);
 
         $request->validate([
             "id" => "required|exists:receive_order_items,id",
-            "mounts.*.locker_id" => "required|exists:lockers,id",
-            "mounts.*.amount" => "required",
+            "lockerables.*.locker_id" => "required|exists:lockers,id",
+            "lockerables.*.amount" => "required",
         ]);
 
-        \App\Jobs\ReceiveMounting::dispatchOrSync($request->all());
+        $record = ReceiveOrderItem::findOrFail($request->get('id'));
+        if (!$record->mounts?->count()) abort(406, "The record has not been mounted.");
+
+        \App\Jobs\ReceiveMounted::dispatchOrSync($request->all());
 
         return response()->json([
             "qid" => $request->get('qid'),

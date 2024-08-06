@@ -30,7 +30,15 @@ class ReceivePalleting extends Job
 
         $record->save();
 
-        \App\Events\RecordSaved::dispatchUnconsole($this->qid, $record); //->withDelay(now()->addSeconds(10));
+        $mounts = $record->getPrepareMounting();
+        if ($mounts->sum('amount') == $record->amount) {
+            \App\Jobs\ReceiveMounting::dispatchSync([
+                "id" => $record->id,
+                "mounts" => $mounts->toArray(),
+            ]);
+        }
+
+        \App\Events\RecordSaved::dispatchUnconsole($this->qid, $record);
 
         app('db')->commit();
     }

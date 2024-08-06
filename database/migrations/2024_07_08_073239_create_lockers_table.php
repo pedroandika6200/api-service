@@ -28,6 +28,7 @@ return new class extends Migration
             $table->foreignId('product_id')->nullable()
                 ->constrained()->on('products')->references('id')->nullOnDelete()->cascadeOnUpdate();
             $table->integer('capacity')->default(0);
+            $table->integer('premount')->default(0);
             $table->integer('amount')->default(0);
             $table->timestamps();
         });
@@ -36,6 +37,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('locker_id');
             $table->foreignId('product_id');
+            $table->morphs('model');
             $table->integer('amount')->default(0);
             $table->text('notes')->nullable();
             $table->timestamps();
