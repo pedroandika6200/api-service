@@ -20,6 +20,9 @@ class ReceiveOrderItemResource extends Resource
             $this->mergeInclude('receive_order', function () {
                 return new ReceiveOrderResource($this->resource->receive_order);
             }),
+            $this->mergeInclude('locker', function () {
+                return new LockerResource($this->resource->locker);
+            }),
         ];
     }
 }
