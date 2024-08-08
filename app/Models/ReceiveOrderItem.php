@@ -37,6 +37,12 @@ class ReceiveOrderItem extends Model
         return $this->belongsTo(Product::class);
     }
 
+    public function locker()
+    {
+        return $this->hasOne(Locker::class, 'receive_order_id', 'receive_order_id')
+                    ->where('product_id', $this->product_id);
+    }
+
     public function getPrepareMounting () : Collection
     {
         $rows = collect();
